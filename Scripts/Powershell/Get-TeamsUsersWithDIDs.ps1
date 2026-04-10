@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Retrieves Microsoft Teams users and their assigned DIDs.
+    Retrieves Microsoft Teams users and their assigned DIDs. 
 
 .DESCRIPTION
     Uses Get-CsPhoneNumberAssignment as the primary source of truth.
