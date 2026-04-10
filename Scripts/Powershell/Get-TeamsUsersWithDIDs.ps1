@@ -1,73 +1,148 @@
 <#
 .SYNOPSIS
-    Retrieves Microsoft Teams users and their assigned DIDs (phone numbers).
+    Retrieves Microsoft Teams users and their assigned DIDs.
+
 .DESCRIPTION
-    Connects to Microsoft Teams and exports users with direct inward dial numbers.
-    It prefers Get-CsPhoneNumberAssignment and falls back to Get-CsOnlineUser when needed.
+    Uses Get-CsPhoneNumberAssignment as the primary source of truth.
+    Falls back to Get-CsOnlineUser if needed.
+    Outputs enriched user data with DisplayName, UPN, and DID.
+
 .PARAMETER CsvPath
-    Path to export the results as CSV. Defaults to .\TeamsUsersWithDIDs.csv.
+    Path to export CSV.
+
 .PARAMETER NoExport
-    If supplied, outputs results to the console instead of exporting a CSV.
+    Output to console only.
+
+.PARAMETER IncludeResourceAccounts
+    Include resource accounts (Auto Attendants / Call Queues).
+
 .EXAMPLE
-    .\Get-TeamsUsersWithDIDs.ps1
-.EXAMPLE
-    .\Get-TeamsUsersWithDIDs.ps1 -CsvPath .\UsersWithDIDs.csv
-.EXAMPLE
-    .\Get-TeamsUsersWithDIDs.ps1 -NoExport
+    .\Get-TeamsUsersWithDIDs.ps1 -Verbose
 #>
+
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory = $false)]
-    [string]
-    $CsvPath = ".\TeamsUsersWithDIDs.csv",
-
-    [Parameter(Mandatory = $false)]
-    [switch]
-    $NoExport
+    [string]$CsvPath = ".\TeamsUsersWithDIDs.csv",
+    [switch]$NoExport,
+    [switch]$IncludeResourceAccounts
 )
 
-function Ensure-Module {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Name
-    )
+#------------------------------------------------------------
+# MODULE CHECK
+#------------------------------------------------------------
+function Install-AndImport-Module {
+    param([string]$Name)
 
     if (-not (Get-Module -ListAvailable -Name $Name)) {
-        Write-Host "Installing PowerShell module '$Name'..." -ForegroundColor Yellow
+        Write-Verbose "Installing module: $Name"
         Install-Module -Name $Name -Scope CurrentUser -Force -AllowClobber
     }
+
     Import-Module $Name -ErrorAction Stop
 }
 
-Write-Host "Preparing to connect to Microsoft Teams..." -ForegroundColor Cyan
-Ensure-Module -Name MicrosoftTeams
-
-if (-not (Get-Module -Name MicrosoftTeams)) {
-    Write-Host "Failed to load MicrosoftTeams module." -ForegroundColor Red
-    return
+#------------------------------------------------------------
+# CONNECT TO TEAMS
+#------------------------------------------------------------
+function Connect-TeamsSession {
+    try {
+        Write-Verbose "Connecting to Microsoft Teams..."
+        Connect-MicrosoftTeams -ErrorAction Stop
+    } catch {
+        Write-Error "Failed to connect to Microsoft Teams. $_"
+        throw
+    }
 }
 
-Write-Host "Signing in to Microsoft Teams..." -ForegroundColor Cyan
-Connect-MicrosoftTeams -ErrorAction Stop
+#------------------------------------------------------------
+# GET PHONE NUMBER ASSIGNMENTS (PRIMARY)
+#------------------------------------------------------------
+function Get-PhoneAssignments {
+    try {
+        Write-Verbose "Retrieving phone number assignments..."
+        
+        return Get-CsPhoneNumberAssignment -AssignedPstnTargetIdType User -ErrorAction Stop
+    } catch {
+        Write-Warning "Primary method failed. Falling back to Get-CsOnlineUser."
+        return $null
+    }
+}
+
+#------------------------------------------------------------
+# FALLBACK METHOD
+#------------------------------------------------------------
+function Get-FallbackUsers {
+    Write-Verbose "Using fallback method (Get-CsOnlineUser)..."
+
+    return Get-CsOnlineUser -ResultSize Unlimited |
+    Where-Object { $_.LineURI } |
+    Select-Object DisplayName, UserPrincipalName,
+    @{Name = 'DID'; Expression = { $_.LineURI -replace '^tel:', '' } },
+    @{Name = 'AssignmentType'; Expression = { 'Fallback' } }
+}
+
+#------------------------------------------------------------
+# MAIN EXECUTION
+#------------------------------------------------------------
+Install-AndImport-Module -Name MicrosoftTeams
+Connect-TeamsSession
 
 $results = @()
 
-try {
-    Write-Host "Fetching users with phone numbers using Get-CsOnlineUser..." -ForegroundColor Cyan
-    $onlineUsers = Get-CsOnlineUser -ResultSize Unlimited -ErrorAction Stop
-    $results = $onlineUsers | Where-Object { $_.LineURI } | Select-Object DisplayName, UserPrincipalName,
-    @{Name = 'DID'; Expression = { $_.LineURI -replace '^tel:', '' } }
-} catch {
-    Write-Host "Failed to retrieve Teams voice assignments. Ensure you have the required permissions and that Teams PowerShell is available." -ForegroundColor Red
-    throw
+$assignments = Get-PhoneAssignments
+
+if ($assignments) {
+
+    Write-Verbose "Joining assignment data with user metadata..."
+
+    $users = Get-CsOnlineUser -ResultSize Unlimited |
+    Select-Object UserPrincipalName, DisplayName
+
+    $userHash = @{}
+    foreach ($u in $users) {
+        $userHash[$u.UserPrincipalName.ToLower()] = $u.DisplayName
+    }
+
+    foreach ($a in $assignments) {
+
+        if (-not $IncludeResourceAccounts -and $a.AssignedPstnTargetId -match "resourceaccount") {
+            continue
+        }
+
+        $upn = $a.AssignedPstnTargetId.ToLower()
+
+        $results += [PSCustomObject]@{
+            DisplayName       = if ($userHash.ContainsKey($upn)) { $userHash[$upn] } else { "Unknown" }
+            UserPrincipalName = $a.AssignedPstnTargetId
+            DID               = $a.PhoneNumber
+            AssignmentType    = $a.PstnAssignmentStatus
+        }
+    }
+
+} else {
+    $results = Get-FallbackUsers
 }
 
+#------------------------------------------------------------
+# OUTPUT
+#------------------------------------------------------------
 if ($NoExport) {
     $results | Format-Table -AutoSize
 } else {
-    Write-Host "Exporting results to $CsvPath..." -ForegroundColor Cyan
-    $results | Export-Csv -Path $CsvPath -NoTypeInformation -Encoding UTF8
-    Write-Host "Export complete." -ForegroundColor Green
+    try {
+        Write-Verbose "Exporting to CSV: $CsvPath"
+
+        $results |
+        Sort-Object DisplayName |
+        Export-Csv -Path $CsvPath -NoTypeInformation -Encoding UTF8 -Force
+
+        Write-Host "Export complete: $CsvPath" -ForegroundColor Green
+    } catch {
+        Write-Error "Failed to export CSV. $_"
+    }
 }
 
+#------------------------------------------------------------
+# CLEANUP
+#------------------------------------------------------------
 Disconnect-MicrosoftTeams
