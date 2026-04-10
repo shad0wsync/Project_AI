@@ -53,21 +53,13 @@ Connect-MicrosoftTeams -ErrorAction Stop
 $results = @()
 
 try {
-    Write-Host "Fetching phone number assignments with Get-CsPhoneNumberAssignment..." -ForegroundColor Cyan
-    $assignments = Get-CsPhoneNumberAssignment -ResultSize Unlimited -ErrorAction Stop
-    $results = $assignments | Select-Object @{Name = 'DisplayName'; Expression = { $_.Identity -replace '^.*?/(.*)$', '$1' } },
-    @{Name = 'UserPrincipalName'; Expression = { $_.Identity -replace '^.*?/(.*)$', '$1' } },
-    @{Name = 'DID'; Expression = { $_.AssignedTelephoneNumber } }
+    Write-Host "Fetching users with phone numbers using Get-CsOnlineUser..." -ForegroundColor Cyan
+    $onlineUsers = Get-CsOnlineUser -ResultSize Unlimited -ErrorAction Stop
+    $results = $onlineUsers | Where-Object { $_.LineURI } | Select-Object DisplayName, UserPrincipalName,
+    @{Name = 'DID'; Expression = { $_.LineURI -replace '^tel:', '' } }
 } catch {
-    Write-Host "Get-CsPhoneNumberAssignment is unavailable or returned an error. Falling back to Get-CsOnlineUser..." -ForegroundColor Yellow
-    try {
-        $onlineUsers = Get-CsOnlineUser -ResultSize Unlimited -ErrorAction Stop
-        $results = $onlineUsers | Select-Object DisplayName, UserPrincipalName,
-        @{Name = 'DID'; Expression = { if ($_.LineURI) { $_.LineURI -replace '^tel:' , '' } else { $null } } }
-    } catch {
-        Write-Host "Failed to retrieve Teams voice assignments. Ensure you have the required permissions and that Teams PowerShell is available." -ForegroundColor Red
-        throw
-    }
+    Write-Host "Failed to retrieve Teams voice assignments. Ensure you have the required permissions and that Teams PowerShell is available." -ForegroundColor Red
+    throw
 }
 
 if ($NoExport) {
@@ -77,3 +69,5 @@ if ($NoExport) {
     $results | Export-Csv -Path $CsvPath -NoTypeInformation -Encoding UTF8
     Write-Host "Export complete." -ForegroundColor Green
 }
+
+Disconnect-MicrosoftTeams
