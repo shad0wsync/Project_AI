@@ -1,0 +1,12 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^cd /workspace ; pwsh -NoLogo -NoProfile -Command \"\\$script = Get-Content -Path 'Scripts/Powershell/pc_health_check\\.ps1' -Raw; \\[scriptblock\\]::Create\\(\\$script\\) \\| Out-Null; Write-Host 'PARSE_OK'\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^powershell -NoProfile -Command \"\\[ScriptBlock\\]::Create\\(\\(Get-Content -Path 'C:\\\\Temp\\\\pc_health_check_snippet\\.ps1' -Raw\\)\\) \\| Out-Null; Write-Host 'PARSE_OK'\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}
