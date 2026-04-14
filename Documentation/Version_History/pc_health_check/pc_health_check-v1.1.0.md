@@ -1,13 +1,15 @@
-# DOC-pc_health_check.md
+# pc_health_check.md
+
+Version: 1.1.0  
+Last Updated: 2026-04-13
 
 ## Table of Contents
 - [Overview](#overview)
+- [Version History](#version-history)
 - [Requirements](#requirements)
 - [Quick Start](#quick-start)
-- [Technical Logic](#technical-logic)
 - [Parameters Reference](#parameters-reference)
 - [Common Use Cases](#common-use-cases)
-- [Security & Safety](#security--safety)
 - [Exit Codes/Error Handling](#exit-codeserror-handling)
 - [Troubleshooting](#troubleshooting)
 
@@ -19,6 +21,12 @@
 - Queries Windows Event Viewer for the 10 most recent error events from System and Application logs.
 - Generates a detailed, sortable HTML report with remediation suggestions.
 - Requires administrator privileges to run.
+
+## Version History
+| Version | Date | Author | Change Summary |
+|---------|------|--------|----------------|
+| 1.1.0 | 2026-04-13 | Scribe | Documentation structure updated to include version tracking and history. No changes to script logic. |
+| 1.0.0 | 2026-04-13 | Scribe | Initial documentation release. |
 
 ## Requirements
 | Component | Version/Details | Notes |
@@ -40,17 +48,6 @@ Enable verbose output for detailed progress:
 .\pc_health_check.ps1 -Verbose
 ```
 
-## Technical Logic
-The script follows a modular function-based architecture:
-
-1. **Initialization**: Validates admin rights and creates output directory.
-2. **Health Checks**: Executes DISM, disk space, disk error, network, and Event Viewer checks sequentially.
-3. **Analysis**: Processes results to generate remediation suggestions.
-4. **Report Generation**: Compiles all data into a formatted HTML document with sortable tables.
-5. **Output**: Saves report to `C:\Temp\pc_health_check\<computername>_MM-DD-YY_HH-MM-SS.html`.
-
-Primary functions include New-OutputFile, Invoke-DismCheck, Get-DiskSpaceReport, Invoke-DiskErrorChecks, Invoke-NetworkConnectivityCheck, Get-RecentEventErrors, Get-HealthSuggestions, and Convert-ReportToHtml.
-
 ## Parameters Reference
 The script currently uses CmdletBinding but accepts no parameters.
 
@@ -70,13 +67,6 @@ Use the network connectivity section to isolate connectivity problems.
 
 ### Event Log Analysis
 Review recent errors in the HTML report to identify recurring system or application issues.
-
-## Security & Safety
-- **Privilege Validation**: Checks for administrator rights before execution.
-- **Read-Only Operations**: Disk scans and DISM checks are non-destructive.
-- **Error Handling**: Try/Catch blocks prevent script failure and provide graceful degradation.
-- **Data Sanitization**: HTML output escapes special characters to prevent injection.
-- **No WhatIf Mode**: Script performs actual checks; no dry-run capability implemented.
 
 ## Exit Codes/Error Handling
 - **Exit Code 0**: Successful completion.
