@@ -11,7 +11,7 @@
     - Grant Teams Policies: https://learn.microsoft.com/en-us/microsoftteams/assign-policies-users-and-groups
     - Batch Policy Assignment: https://learn.microsoft.com/en-us/powershell/module/teams/new-csbatchpolicyassignmentoperation
     
-    Author: Senior Windows Systems Architect & Automation Engineer
+    Author: Jay Smith
     Version: 1.0.0
     Prerequisites: Set-TeamsVoiceSecurityBaseline.ps1 must be executed first
 
@@ -88,15 +88,26 @@ process {
 
         #region Module and Connection Validation
         
+        # Import required modules
         Import-Module -Name MicrosoftTeams -Force
+        Import-Module -Name Microsoft.Graph.Groups -Force
+        Import-Module -Name Microsoft.Graph.Users -Force
         
+        # Connect to Teams service
         if ($null -eq $Credential) {
             Connect-MicrosoftTeams | Out-Null
         } else {
             Connect-MicrosoftTeams -Credential $Credential | Out-Null
         }
+        
+        # Connect to Microsoft Graph service
+        if ($null -eq $Credential) {
+            Connect-MgGraph | Out-Null
+        } else {
+            Connect-MgGraph -Credential $Credential | Out-Null
+        }
 
-        Write-LogEntry "Connected to Teams service" -Level 'Success'
+        Write-LogEntry "Connected to Teams and Microsoft Graph services" -Level 'Success'
 
         #endregion
 
@@ -104,10 +115,10 @@ process {
 
         # Define baseline policies
         $policies = @{
-            CallingPolicy  = 'RestrictedTeamsVoicePolicy'
-            MeetingPolicy  = 'RestrictedTeamsMeetingPolicy'
+            CallingPolicy   = 'RestrictedTeamsVoicePolicy'
+            MeetingPolicy   = 'RestrictedTeamsMeetingPolicy'
             MessagingPolicy = 'RestrictedTeamsMessagingPolicy'
-            AppSetupPolicy = 'RestrictedTeamsDevicePolicy'
+            AppSetupPolicy  = 'RestrictedTeamsDevicePolicy'
         }
 
         # Validate policies exist
@@ -197,7 +208,8 @@ process {
 
         #region Cleanup
         Disconnect-MicrosoftTeams -Confirm:$false | Out-Null
-        Write-LogEntry "Disconnected from Teams service" -Level 'Info'
+        Disconnect-MgGraph -Confirm:$false | Out-Null
+        Write-LogEntry "Disconnected from Teams and Microsoft Graph services" -Level 'Info'
         Write-Host "✓ Policy assignment complete for $assignmentCount user(s)/group(s)" -ForegroundColor Green
 
         #endregion

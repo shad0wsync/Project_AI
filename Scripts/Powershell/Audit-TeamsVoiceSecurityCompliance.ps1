@@ -11,7 +11,7 @@
     - Teams Admin Center Reporting: https://learn.microsoft.com/en-us/microsoftteams/teams-analytics-and-reports
     - Policy Assignment Verification: https://learn.microsoft.com/en-us/powershell/module/teams/get-csuser
     
-    Author: Senior Windows Systems Architect & Automation Engineer
+    Author: Jay Smith
     Version: 1.0.0
 
 .PARAMETER LogPath
@@ -115,10 +115,10 @@ try {
     Write-Verbose "[$(Get-Date -Format 'HH:mm:ss')] Validating baseline policies exist"
     
     $expectedPolicies = @{
-        CallingPolicy     = 'RestrictedTeamsVoicePolicy'
-        MeetingPolicy     = 'RestrictedTeamsMeetingPolicy'
-        MessagingPolicy   = 'RestrictedTeamsMessagingPolicy'
-        AppSetupPolicy    = 'RestrictedTeamsDevicePolicy'
+        CallingPolicy   = 'RestrictedTeamsVoicePolicy'
+        MeetingPolicy   = 'RestrictedTeamsMeetingPolicy'
+        MessagingPolicy = 'RestrictedTeamsMessagingPolicy'
+        AppSetupPolicy  = 'RestrictedTeamsDevicePolicy'
     }
 
     $policyStatus = @()
@@ -173,10 +173,10 @@ try {
     foreach ($user in $teams_users) {
         try {
             $userPolicies = @{
-                CallingPolicy     = Get-CsUserPolicyAssignment -Identity $user.ObjectId -PolicyType TeamsCallingPolicy -ErrorAction SilentlyContinue | Select-Object -ExpandProperty PolicyName
-                MeetingPolicy     = Get-CsUserPolicyAssignment -Identity $user.ObjectId -PolicyType TeamsMeetingPolicy -ErrorAction SilentlyContinue | Select-Object -ExpandProperty PolicyName
-                MessagingPolicy   = Get-CsUserPolicyAssignment -Identity $user.ObjectId -PolicyType TeamsMessagingPolicy -ErrorAction SilentlyContinue | Select-Object -ExpandProperty PolicyName
-                AppSetupPolicy    = Get-CsUserPolicyAssignment -Identity $user.ObjectId -PolicyType TeamsAppSetupPolicy -ErrorAction SilentlyContinue | Select-Object -ExpandProperty PolicyName
+                CallingPolicy   = Get-CsUserPolicyAssignment -Identity $user.ObjectId -PolicyType TeamsCallingPolicy -ErrorAction SilentlyContinue | Select-Object -ExpandProperty PolicyName
+                MeetingPolicy   = Get-CsUserPolicyAssignment -Identity $user.ObjectId -PolicyType TeamsMeetingPolicy -ErrorAction SilentlyContinue | Select-Object -ExpandProperty PolicyName
+                MessagingPolicy = Get-CsUserPolicyAssignment -Identity $user.ObjectId -PolicyType TeamsMessagingPolicy -ErrorAction SilentlyContinue | Select-Object -ExpandProperty PolicyName
+                AppSetupPolicy  = Get-CsUserPolicyAssignment -Identity $user.ObjectId -PolicyType TeamsAppSetupPolicy -ErrorAction SilentlyContinue | Select-Object -ExpandProperty PolicyName
             }
 
             $isCompliant = (
@@ -188,20 +188,20 @@ try {
 
             if ($isCompliant) {
                 $userComplianceStatus += [PSCustomObject]@{
-                    UserId           = $user.ObjectId
+                    UserId            = $user.ObjectId
                     UserPrincipalName = $user.UserPrincipalName
-                    ComplianceStatus = 'Compliant'
-                    CallingPolicy    = $userPolicies['CallingPolicy'] ?? 'Global Default'
+                    ComplianceStatus  = 'Compliant'
+                    CallingPolicy     = $userPolicies['CallingPolicy'] ?? 'Global Default'
                     MeetingPolicy    = $userPolicies['MeetingPolicy'] ?? 'Global Default'
                     MessagingPolicy  = $userPolicies['MessagingPolicy'] ?? 'Global Default'
                     AppSetupPolicy   = $userPolicies['AppSetupPolicy'] ?? 'Global Default'
                 }
             } else {
                 $userComplianceStatus += [PSCustomObject]@{
-                    UserId           = $user.ObjectId
+                    UserId            = $user.ObjectId
                     UserPrincipalName = $user.UserPrincipalName
-                    ComplianceStatus = 'Non-Compliant'
-                    CallingPolicy    = $userPolicies['CallingPolicy'] ?? 'Not Assigned'
+                    ComplianceStatus  = 'Non-Compliant'
+                    CallingPolicy     = $userPolicies['CallingPolicy'] ?? 'Not Assigned'
                     MeetingPolicy    = $userPolicies['MeetingPolicy'] ?? 'Not Assigned'
                     MessagingPolicy  = $userPolicies['MessagingPolicy'] ?? 'Not Assigned'
                     AppSetupPolicy   = $userPolicies['AppSetupPolicy'] ?? 'Not Assigned'
@@ -221,12 +221,12 @@ try {
     Write-LogEntry "User audit complete: $compliantCount compliant, $nonCompliantCount non-compliant" -Level 'Info'
 
     $complianceFindings += [PSCustomObject]@{
-        Category                = 'UserPolicyAssignments'
-        TotalUsers              = $userComplianceStatus.Count
-        CompliantUsers          = $compliantCount
-        NonCompliantUsers       = $nonCompliantCount
-        CompliancePercentage    = if ($userComplianceStatus.Count -gt 0) { [math]::Round(($compliantCount / $userComplianceStatus.Count) * 100, 2) } else { 0 }
-        Details                 = $userComplianceStatus
+        Category             = 'UserPolicyAssignments'
+        TotalUsers           = $userComplianceStatus.Count
+        CompliantUsers       = $compliantCount
+        NonCompliantUsers    = $nonCompliantCount
+        CompliancePercentage = if ($userComplianceStatus.Count -gt 0) { [math]::Round(($compliantCount / $userComplianceStatus.Count) * 100, 2) } else { 0 }
+        Details              = $userComplianceStatus
     }
 
 } catch {
@@ -252,14 +252,14 @@ try {
     Write-LogEntry "Federation configuration status: $federationCompliant" -Level 'Info'
 
     $complianceFindings += [PSCustomObject]@{
-        Category                          = 'FederationConfiguration'
-        AllowFederatedUsers              = $federationSettings.AllowFederatedUsers
-        AllowPublicUsers                 = $federationSettings.AllowPublicUsers
-        AllowTeamsConsumer               = $federationSettings.AllowTeamsConsumer
-        AllowTeamsConsumerInbound        = $federationSettings.AllowTeamsConsumerInbound
-        SharedSipAddressSpace            = $federationSettings.SharedSipAddressSpace
-        OverallComplianceStatus          = $federationCompliant
-        Details                          = $federationCompliance
+        Category                  = 'FederationConfiguration'
+        AllowFederatedUsers       = $federationSettings.AllowFederatedUsers
+        AllowPublicUsers          = $federationSettings.AllowPublicUsers
+        AllowTeamsConsumer        = $federationSettings.AllowTeamsConsumer
+        AllowTeamsConsumerInbound = $federationSettings.AllowTeamsConsumerInbound
+        SharedSipAddressSpace     = $federationSettings.SharedSipAddressSpace
+        OverallComplianceStatus   = $federationCompliant
+        Details                   = $federationCompliance
     }
 
 } catch {
@@ -373,11 +373,11 @@ try {
 "@
 
             $expectedFederation = @{
-                'AllowFederatedUsers'     = $true
-                'AllowPublicUsers'        = $false
-                'AllowTeamsConsumer'      = $false
+                'AllowFederatedUsers'       = $true
+                'AllowPublicUsers'          = $false
+                'AllowTeamsConsumer'        = $false
                 'AllowTeamsConsumerInbound' = $false
-                'SharedSipAddressSpace'   = $false
+                'SharedSipAddressSpace'     = $false
             }
 
             foreach ($setting in $expectedFederation.Keys) {

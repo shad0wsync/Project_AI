@@ -17,7 +17,7 @@
     - Federation Settings: https://learn.microsoft.com/en-us/microsoftteams/manage-external-access
     - Licensing Requirements: https://learn.microsoft.com/en-us/microsoftteams/teams-phone-licensing
     
-    Author: Senior Windows Systems Architect & Automation Engineer
+    Author: Jay Smith
     Version: 1.0.0
     Changelog: Initial release with core Teams Voice security baseline policies
 
@@ -195,12 +195,12 @@ try {
         Write-LogEntry "Teams Calling Policy created successfully: $voicePolicyName" -Level 'Success'
         
         $complianceResults += [PSCustomObject]@{
-            PolicyName    = $voicePolicyName
-            PolicyType    = 'CallingPolicy'
-            Status        = 'Configured'
-            Description   = $voicePolicyDesc
-            AllowPrivate  = $true
-            AllowGroup    = $true
+            PolicyName     = $voicePolicyName
+            PolicyType     = 'CallingPolicy'
+            Status         = 'Configured'
+            Description    = $voicePolicyDesc
+            AllowPrivate   = $true
+            AllowGroup     = $true
             AllowEmergency = $true
         }
     }
@@ -295,12 +295,12 @@ try {
         Write-LogEntry "Federation configured: Allows federated users with restricted Teams calling" -Level 'Success'
         
         $complianceResults += [PSCustomObject]@{
-            Setting          = 'Federation Configuration'
-            AllowFederated   = $true
-            AllowPublic      = $false
+            Setting            = 'Federation Configuration'
+            AllowFederated     = $true
+            AllowPublic        = $false
             AllowTeamsConsumer = $false
-            BlockTeamsCalling = $true
-            Status           = 'Configured'
+            BlockTeamsCalling  = $true
+            Status             = 'Configured'
         }
     }
 
@@ -340,10 +340,10 @@ try {
         Write-LogEntry "Teams App Setup Policy created successfully: $devicePolicyName" -Level 'Success'
         
         $complianceResults += [PSCustomObject]@{
-            PolicyName      = $devicePolicyName
-            PolicyType      = 'AppSetupPolicy'
-            Status          = 'Configured'
-            Description     = $devicePolicyDesc
+            PolicyName       = $devicePolicyName
+            PolicyType       = 'AppSetupPolicy'
+            Status           = 'Configured'
+            Description      = $devicePolicyDesc
             AllowSideLoading = $false
             AllowUserPinning = $false
         }
@@ -390,12 +390,12 @@ try {
         Write-LogEntry "Teams Client Configuration created successfully: $clientPolicyName" -Level 'Success'
         
         $complianceResults += [PSCustomObject]@{
-            PolicyName               = $clientPolicyName
-            PolicyType              = 'ClientConfiguration'
-            Status                  = 'Configured'
-            Description             = $clientPolicyDesc
-            AllowOneDrive           = $true
-            AllowThirdPartyStorage  = $false
+            PolicyName             = $clientPolicyName
+            PolicyType             = 'ClientConfiguration'
+            Status                 = 'Configured'
+            Description            = $clientPolicyDesc
+            AllowOneDrive          = $true
+            AllowThirdPartyStorage = $false
         }
     }
 
@@ -447,16 +447,16 @@ try {
         Write-LogEntry "Teams Messaging Policy created successfully: $messagingPolicyName" -Level 'Success'
         
         $complianceResults += [PSCustomObject]@{
-            PolicyName              = $messagingPolicyName
-            PolicyType             = 'MessagingPolicy'
-            Status                 = 'Configured'
-            Description            = $messagingPolicyDesc
-            AllowUserChat          = $true
-            AllowUserDeleteChat    = $false
-            AllowMemes             = $false
-            AllowStickers          = $false
-            AllowGiphy             = $false
-            SecurityReporting      = 'Enabled'
+            PolicyName          = $messagingPolicyName
+            PolicyType          = 'MessagingPolicy'
+            Status              = 'Configured'
+            Description         = $messagingPolicyDesc
+            AllowUserChat       = $true
+            AllowUserDeleteChat = $false
+            AllowMemes          = $false
+            AllowStickers       = $false
+            AllowGiphy          = $false
+            SecurityReporting   = 'Enabled'
         }
     }
 
