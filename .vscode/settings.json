@@ -1,6 +1,7 @@
 {
-  "chat.agentFilesLocations": [".github/Agents"],
-  "chat.useAgentsMdFile": true,
-  "github.copilot.chat.useCustomizationsInParentRepositories": true,
-  "chat.defaultPersona": "orchestrator"
+  "github.copilot.chat.agentFilesLocations": [
+    ".github/agents"
+  ],
+  "github.copilot.chat.useAgentsMdFile": true,
+  "github.copilot.chat.useCustomizationsInParentRepositories": true
 }
