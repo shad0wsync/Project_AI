@@ -3,5 +3,18 @@
     ".github/agents"
   ],
   "github.copilot.chat.useAgentsMdFile": true,
-  "github.copilot.chat.useCustomizationsInParentRepositories": true
+  "github.copilot.chat.useCustomizationsInParentRepositories": true,
+  "github.copilot.chat.defaultAgent": "orchestrator.md",
+  "gemini.chat.agentFilesLocations": [
+    ".github/agents"
+  ],
+  "gemini.chat.defaultAgent": "orchestrator.md",
+  "chatgpt.chat.agentFilesLocations": [
+    ".github/agents"
+  ],
+  "chatgpt.chat.defaultAgent": "orchestrator.md",
+  "hatz.chat.agentFilesLocations": [
+    ".github/agents"
+  ],
+  "hatz.chat.defaultAgent": "orchestrator.md"
 }
