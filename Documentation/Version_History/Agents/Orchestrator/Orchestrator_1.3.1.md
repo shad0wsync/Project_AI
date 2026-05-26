@@ -1,6 +1,6 @@
 
 name: AI Orchestrator
-version: 1.3.2
+version: 1.3.1
 title: 'AI Orchestrator - Intelligent Task Router & Persona Coordinator'
 last_updated: 2026-05-26
 
