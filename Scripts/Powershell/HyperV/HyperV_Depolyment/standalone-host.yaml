@@ -1,0 +1,42 @@
+# ============================================================================
+# HyperVDeployment Template: Standalone Host (No Clustering)
+# ============================================================================
+# Use with: .\HyperVDeployment.ps1 -Mode Fix -TemplatePath .\templates\standalone-host.yaml
+#
+# Minimal standalone Hyper-V host — no clustering, no iSCSI, no live migration.
+# ============================================================================
+
+# Host Configuration
+HostConfig:
+  PowerPlan: HighPerformance
+  NUMASpanning: false
+  EnhancedSessionMode: true
+  DefaultVMPath: D:\Hyper-V\Virtual Machines
+  DefaultVHDPath: D:\Hyper-V\Virtual Hard Disks
+
+# Windows Defender Exclusions
+Defender:
+  AddExclusions: true
+
+# Networking
+Networking:
+  VSwitchName: vSwitch_Prod
+  LanAdapters:                     # Physical NIC names for vSwitch (Get-NetAdapter)
+    - Ethernet                     # <-- Replace with actual adapter name
+  UseSET: true
+  AllowManagementOS: true
+  ManagementVLAN: 0
+  JumboMTU: 0                      # 0 = skip, 9014 = jumbo frames
+
+# Storage — local only, no iSCSI
+Storage: skip
+
+# Clustering — not needed
+Clustering: skip
+
+# Live Migration — not applicable for standalone
+LiveMigration: skip
+
+# Post-Deploy
+PostDeploy:
+  RunAssessment: true

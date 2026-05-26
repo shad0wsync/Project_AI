@@ -1,0 +1,65 @@
+# ============================================================================
+# HyperVDeployment Template: Standalone Host with iSCSI Storage
+# ============================================================================
+# Use with: .\HyperVDeployment.ps1 -Mode Fix -TemplatePath .\templates\standalone-iscsi.yaml
+#
+# Standalone Hyper-V host with iSCSI/MPIO storage — no clustering.
+# ============================================================================
+
+# Host Configuration
+HostConfig:
+  PowerPlan: HighPerformance
+  NUMASpanning: false
+  EnhancedSessionMode: true
+  DefaultVMPath: D:\Hyper-V\Virtual Machines
+  DefaultVHDPath: D:\Hyper-V\Virtual Hard Disks
+
+# Windows Defender Exclusions
+Defender:
+  AddExclusions: true
+
+# Networking
+Networking:
+  VSwitchName: vSwitch_Prod
+  LanAdapters:                     # Physical NIC names for vSwitch (Get-NetAdapter)
+    - NIC1                         # <-- Replace with actual LAN adapter name
+    - NIC2                         # <-- Replace with actual LAN adapter name
+  UseSET: true
+  AllowManagementOS: true
+  ManagementVLAN: 0
+  JumboMTU: 9014                   # 0 = skip, 9014 = jumbo frames (applies to LAN + iSCSI)
+  IscsiAdapters:                   # Dedicated iSCSI NIC names
+    - iSCSI-NIC1                   # <-- Replace with actual iSCSI adapter name
+    - iSCSI-NIC2                   # <-- Replace with actual iSCSI adapter name
+  IscsiAdapterIPs:                 # IPs for iSCSI adapters (paired 1:1 with IscsiAdapters)
+    - 10.0.2.10                    # <-- Replace with actual iSCSI NIC IP (subnet A)
+    - 10.0.3.10                    # <-- Replace with actual iSCSI NIC IP (subnet B)
+  IscsiSubnetPrefix: 24
+  IscsiVLAN: 0                     # 0 = no VLAN on iSCSI NICs
+
+# Storage (iSCSI with MPIO)
+Storage:
+  Mode: iSCSI
+  InstallMPIO: true
+  EnableMultipath: true
+  MPIOPolicy: RR                   # RR | FOO | LQD | WP | RRWS
+  DiskTimeout: 60
+  TargetPortals:                   # iSCSI target portal IPs (paired 1:1 with IscsiAdapterIPs)
+    - 10.0.2.100                   # <-- Replace with actual portal IP (subnet A)
+    - 10.0.3.100                   # <-- Replace with actual portal IP (subnet B)
+  Auth: None                       # None | OneWayCHAP
+  # ChapUsername: ''               # CHAP username (if Auth: OneWayCHAP)
+  # TargetPortalPort: 3260         # Uncomment if non-default port
+  Volumes:                         # Format: DiskNumber:DriveLetter:Label:FileSystem:AllocationUnit
+    # - 1:E:VMs:ReFS:65536         # <-- Uncomment and adjust per your LUN layout
+    # - 2:F:Data:ReFS:65536        # <-- Only RAW disks are formatted; initialized disks are skipped
+
+# Clustering — not needed for standalone
+Clustering: skip
+
+# Live Migration — not applicable for standalone
+LiveMigration: skip
+
+# Post-Deploy
+PostDeploy:
+  RunAssessment: true

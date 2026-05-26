@@ -1,0 +1,79 @@
+# ============================================================================
+# HyperVDeployment Template: Clustered Host
+# ============================================================================
+# Use with: .\HyperVDeployment.ps1 -Mode Fix -TemplatePath .\templates\cluster-host.yaml
+#
+# Rules:
+#   - Omit a section entirely to skip it
+#   - Set a section to 'skip' to explicitly skip it
+#   - Command-line parameters always override template values
+# ============================================================================
+
+# Host Configuration
+HostConfig:
+  PowerPlan: HighPerformance       # HighPerformance | Ultimate | skip
+  NUMASpanning: false              # true | false (false recommended for production)
+  EnhancedSessionMode: true        # true | false
+  DefaultVMPath: D:\Hyper-V\Virtual Machines
+  DefaultVHDPath: D:\Hyper-V\Virtual Hard Disks
+
+# Windows Defender Exclusions
+Defender:
+  AddExclusions: true              # true | false | skip
+
+# Networking
+Networking:
+  VSwitchName: vSwitch_Prod
+  LanAdapters:                     # Physical NIC names for vSwitch (Get-NetAdapter)
+    - NIC1                         # <-- Replace with actual LAN adapter name
+    - NIC2                         # <-- Replace with actual LAN adapter name
+  UseSET: true                     # true = SET, false = LBFO
+  AllowManagementOS: true
+  ManagementVLAN: 100              # 0 = no VLAN tagging
+  JumboMTU: 9014                   # 0 = skip, 9014 = jumbo frames (applies to LAN + iSCSI)
+  IscsiAdapters:                   # Dedicated iSCSI NIC names
+    - iSCSI-NIC1                   # <-- Replace with actual iSCSI adapter name
+    - iSCSI-NIC2                   # <-- Replace with actual iSCSI adapter name
+  IscsiAdapterIPs:                 # IPs for iSCSI adapters (paired 1:1 with IscsiAdapters)
+    - 10.0.2.10                    # <-- Replace with actual iSCSI NIC IP (subnet A)
+    - 10.0.3.10                    # <-- Replace with actual iSCSI NIC IP (subnet B)
+  IscsiSubnetPrefix: 24
+  IscsiVLAN: 0                     # 0 = no VLAN on iSCSI NICs
+
+# Storage (iSCSI)
+Storage:
+  Mode: iSCSI                      # Local | iSCSI | skip
+  InstallMPIO: true
+  EnableMultipath: true
+  MPIOPolicy: RR                   # RR | FOO | LQD | WP | RRWS
+  DiskTimeout: 60
+  TargetPortals:                   # iSCSI target portal IPs (paired 1:1 with IscsiAdapterIPs)
+    - 10.0.2.100                   # <-- Replace with actual portal IP (subnet A)
+    - 10.0.3.100                   # <-- Replace with actual portal IP (subnet B)
+  Auth: None                       # None | OneWayCHAP
+  # ChapUsername: ''               # CHAP username (if Auth: OneWayCHAP)
+  # TargetPortalPort: 3260         # Uncomment if non-default port
+  Volumes:                         # Format: DiskNumber:DriveLetter:Label:FileSystem:AllocationUnit
+    # - 1:E:VMs:ReFS:65536         # <-- Uncomment and adjust per your LUN layout
+    # - 2:F:Data:ReFS:65536        # <-- Only RAW disks are formatted; initialized disks are skipped
+
+# Failover Clustering
+Clustering:
+  ClusterName: HV-CLUSTER01        # <-- Replace with actual cluster name
+  ClusterNodes:
+    - HV-NODE01                    # <-- Replace with actual node name
+    - HV-NODE02                    # <-- Replace with actual node name
+  ClusterIP: 10.0.1.50             # <-- Replace with actual cluster IP
+  Quorum: Disk                     # Disk | FileShare | None
+  DiskWitnessResource: Cluster Disk 1  # <-- Replace with actual cluster disk resource name
+  # FileShareWitnessPath: \\server\share  # Uncomment for FileShare quorum
+
+# Live Migration
+LiveMigration:
+  Protocol: SMB                    # SMB | Compression | TCPIP | skip
+  Auth: Kerberos                   # Kerberos | CredSSP
+  MaxConcurrent: 2
+
+# Post-Deploy
+PostDeploy:
+  RunAssessment: true
