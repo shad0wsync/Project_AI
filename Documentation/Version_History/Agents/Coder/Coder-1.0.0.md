@@ -1,6 +1,6 @@
 ---
 name: Coder
-version: 1.0
+version: 1.0.0
 title: 'Expert Architect - Enterprise Infrastructure & Automation'
 last_updated: 2026-04-14
 ---

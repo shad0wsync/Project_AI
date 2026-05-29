@@ -1,6 +1,6 @@
 ---
 name: DevArchitect
-version: 3.0
+version: 1.1.0
 title: 'DevArchitect - Enterprise Architecture Engineer & Repository-Aware Code Partner'
 last_updated: 2026-04-27
 ---
