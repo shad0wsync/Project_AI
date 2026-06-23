@@ -805,7 +805,7 @@ else {
         Write-Host "✓ Selected: Migrate all $($script:sourceMembers.Count) users" -ForegroundColor Green
     }
     elseif ($scopeChoice -eq '2') {
-        Write-Host "`nEnter SAM account names (comma-separated, e.g., john.smith,jane.doe):" -ForegroundColor Yellow
+        Write-Host ("`nEnter SAM account names (comma-separated, e.g., john.smith,jane.doe):") -ForegroundColor Yellow
         $userInput = Read-Host "Users"
         
         $selectedSAMs = $userInput -split ',' | ForEach-Object { $_.Trim() }
@@ -945,13 +945,13 @@ Write-Host "  ✓ Audit export: $($script:auditExport.CSVPath)" -ForegroundColor
 
 if ($script:htmlPath -and (Test-Path -LiteralPath $script:htmlPath)) {
     $htmlSize = (Get-Item -LiteralPath $script:htmlPath).Length
-    Write-Host "  ✓ HTML report: $script:htmlPath ($htmlSize bytes)" -ForegroundColor Green
+    Write-Host "  ✓ HTML report: $script:htmlPath ($($htmlSize) bytes)" -ForegroundColor Green
 }
 elseif ($script:htmlPath) {
-    Write-Host "  ⚠ HTML report: File not found at $script:htmlPath" -ForegroundColor Yellow
+    Write-Host "  WARNING - HTML report: File not found at $script:htmlPath" -ForegroundColor Yellow
 }
 else {
-    Write-Host "  ⚠ HTML report: Not generated" -ForegroundColor Yellow
+    Write-Host "  WARNING - HTML report: Not generated" -ForegroundColor Yellow
 }
 
 Write-Host "`nEnd Time: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor Cyan
