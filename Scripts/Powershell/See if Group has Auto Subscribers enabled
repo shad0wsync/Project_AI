@@ -1,0 +1,1 @@
+Get-UnifiedGroup -Anr 'Boston Office PTO' | Format-List DisplayName,AutoSubscribeNewMembers
