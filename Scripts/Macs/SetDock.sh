@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-dockutilbin=$(/user/bin/dockutil)
+dockutilbin=$(/usr/bin/dockutil)
 loggedInUser=$(echo "show State:/Users/ConsoleUser" | /usr/sbin/scutil | /usr/bin/awk '/Name :/ && ! /loginwindow/ { print $3 }')
 loggedInUserPlist="/Users/$loggedInUser/Library/Preferences/com.apple.dock.plist"
 
